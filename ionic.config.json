@@ -1,0 +1,8 @@
+{
+  "name": "ATS",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite",
+  "id": "a61e4a70"
+}
