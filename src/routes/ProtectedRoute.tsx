@@ -7,17 +7,15 @@ const ProtectedRoute = ({
   path,
   ...rest
 }: {
-  children: any;
+  children: React.ReactNode;
   isAuthenticated: boolean;
   path: string;
 }) => {
   return (
     <Route
+      exact
       path={path}
-      {...rest}
-      render={(props) =>
-        isAuthenticated ? children : <Redirect to="/login" />
-      }
+      render={() => (isAuthenticated ? children : <Redirect to="/login" />)}
     />
   );
 };
