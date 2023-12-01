@@ -20,7 +20,6 @@ import LoginIcon from "@mui/icons-material/Login";
 import PersonIcon from "@mui/icons-material/Person";
 import { useHistory } from "react-router";
 import ErrorIcon from "@mui/icons-material/Error";
-import { ConstructionOutlined } from "@mui/icons-material";
 
 const Login = () => {
   const [user, setUser] = useState({ email: "", password: "" });

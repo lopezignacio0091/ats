@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ContainerSvg, Row, Section, StyledAccordion } from "./styles";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -10,8 +10,19 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { Container } from "./styles";
 import useReserveById from "../../../../hooks/query/useReserveById";
 import { Chip } from "@mui/material";
+import Detail from "./components/Detail/Detail";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import useStore from "../../User/store/useStore";
+import { Reserve } from "../../../../types/Reserve";
 const Trips = () => {
   const { data } = useReserveById();
+  const [open, setOpen] = useState(false);
+  const { setSelectReserve, setClearReserve } = useStore((state) => state);
+  const handleModal = (e: any, reserve: Reserve) => {
+    setOpen(true);
+    e.stopPropagation();
+    setSelectReserve(reserve);
+  };
 
   return (
     <Container>
@@ -19,7 +30,7 @@ const Trips = () => {
         data.map((trip) => {
           const colorChip = trip.status === "pending" ? "error" : "success";
           return (
-            <StyledAccordion>
+            <StyledAccordion key={trip.id}>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls="panel1a-content"
@@ -30,11 +41,12 @@ const Trips = () => {
                     <DateRangeIcon />
                     <Typography>{trip.created_at}</Typography>
                   </Section>
-                  <Chip
+                  <VisibilityIcon onClick={(e) => handleModal(e, trip)} />
+                  {/* <Chip
                     color={colorChip}
                     size="small"
                     label={trip.status.toUpperCase()}
-                  />
+                  /> */}
                 </Row>
               </AccordionSummary>
               <AccordionDetails>
@@ -55,6 +67,7 @@ const Trips = () => {
             </StyledAccordion>
           );
         })}
+      <Detail open={open} onClose={() => setOpen(false)} />
     </Container>
   );
 };

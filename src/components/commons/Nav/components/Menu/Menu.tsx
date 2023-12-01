@@ -14,7 +14,8 @@ const BasicMenu = ({ open, onClose  , anchorEl}: MenuProps) => {
 
   const capitalizate = () => {
     return (user?.name || '').charAt(0).toUpperCase() + (user?.name || '') .slice(1);
-  }
+  };
+  
   return (
     <MenuStyled
       id="basic-menu"

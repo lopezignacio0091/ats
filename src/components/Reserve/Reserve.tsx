@@ -1,119 +1,115 @@
-import { useEffect, useState } from "react";
-import useVanById from "../../hooks/mutation/useVanById";
-import DatePicker from "../commons/DatePicker/DatePicker";
-import MultiSelect from "../commons/MultiSelect/MultiSelect";
-import Seats from "./components/Seats/Seats";
+import { useState } from "react";
 import useStore from "./store/useStore";
 import {
+  Body,
   Box,
   Container,
-  Dot,
+  Footer,
   Row,
-  SeatsContainer,
   SectionContainer,
-  TicketInfo,
   Title,
 } from "./styles";
-import TextField from "@mui/material/TextField";
 import EventSeatIcon from "@mui/icons-material/EventSeat";
-import useTours from "../../hooks/query/useTours";
-import { Button } from "@mui/material";
+import { Alert, AlertTitle, Button } from "@mui/material";
 import { SectionContent } from "./styles";
-import SnackbarAlert from "../commons/Snackbar/Snackbar";
 import useReserve from "../../hooks/mutation/useCreateReserve";
 import useStoreLogin from "../Login/store/useStore";
-import { useHistory } from "react-router";
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 import { createPreferenceClient } from "../../client/createPreference";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import ChoseTour from "./Steps/ChoseTour/ChoseTour";
+import { StepType } from "../commons/Stepper/types";
+import ChooseSeat from "./Steps/ChoseSeat/ChooseSeat";
+import StepperComponent from "../commons/Stepper/Stepper";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Details from "./Steps/Details/Details";
+import PaymentIcon from "@mui/icons-material/Payment";
+import useSetSeat from "../../hooks/mutation/useSetSeat";
 initMercadoPago("TEST-77223100-ad89-4f69-8d1e-7608463dcd9d");
 
 const Reserve = () => {
   const { user } = useStoreLogin((state) => state);
-  const [loading, setLoading] = useState(false);
-  const { tour, date, van, seat } = useStore((state) => state.data);
-  const { setTour, setDate, setVan, setClearStore } = useStore(
-    (state) => state
+  const { tour, date, van, seat, checkDiff, alternativeDomicile } = useStore(
+    (state) => state.data
   );
-  const { data: tours, isLoading } = useTours();
-  const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState("");
   const [preferenceId, setPreferenceId] = useState(null);
-  const [isReady, setIsReady] = useState(false);
   const [loadingPreference, setLoadingPreference] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
 
-  const history = useHistory();
-  const { mutateAsync } = useVanById();
-  const {
-    mutate: createReserve,
-    isSuccess: isSuccesCreate,
-    isError,
-    isLoading: isLoadingReserve,
-  } = useReserve();
+  const { mutate: createReserve } = useReserve();
+  const { mutate: setSeatStatus } = useSetSeat();
 
-  useEffect(() => {
-    let timeoutId: any;
-    if (isSuccesCreate) {
-      timeoutId = setTimeout(() => {
-        setClearStore();
-        history.push("/home"), 5000;
-      });
-    }
-    return () => timeoutId && clearTimeout(timeoutId);
-  }, [isSuccesCreate]);
-
-  const handleTour = async (tour: any) => {
-    const tourSelect: any = tours && tours.find((op) => op.id === tour);
-    try {
-      setLoading(true);
-      const van = await mutateAsync(tourSelect);
-      setTour(tourSelect);
-      setVan(van);
-    } catch (error) {
-      console.log("error");
-    } finally {
-      setLoading(false);
-    }
+  const validateStepOne = () => {
+    let validationErrors: string[] = [];
+    if (!tour || !date || !van || (checkDiff && !alternativeDomicile))
+      validationErrors.push("Complete los campos");
+    return validationErrors;
   };
 
-  if (isLoading) return "Cargando Tours..";
+  const validateStepTwo = () => {
+    let validationErrors: string[] = [];
+    if (seat.length === 0) validationErrors.push("Complete los campos");
+    return validationErrors;
+  };
+
+  const steps: StepType[] = [
+    {
+      index: 0,
+      component: <ChoseTour />,
+      displayName: "Selecciona tu destino",
+      validationErrors: validateStepOne(),
+      completed: !(validateStepOne().length > 0),
+    },
+    {
+      index: 1,
+      component: <ChooseSeat />,
+      displayName: "Selecciona tu asiento",
+      validationErrors: validateStepTwo(),
+      completed: activeStep > 0 && !(validateStepTwo().length > 0),
+    },
+    {
+      index: 2,
+      component: <Details />,
+      displayName: "Detalles",
+      validationErrors: [],
+    },
+  ];
 
   const handleSubmit = () => {
     createReserve(
-      { userId: user.id, tourId: tour.id, seatId: seat, date },
       {
-        onSuccess: ({ message }) => {
-          setStatus("success");
-          setMessage(message);
-          setOpen(true);
-        },
-        onError: () => {
-          setStatus("error");
-          setMessage("Error al crear la reserva");
-          setOpen(true);
+        userId: user.id,
+        tourId: tour?.id,
+        seatId: seat,
+        date,
+        alternativeDomicile: checkDiff ? alternativeDomicile : user.domicile,
+      },
+      {
+        onSuccess: ({ id }) => {
+          localStorage.setItem("reserveId", id);
+          for (let i = 0; seat.length < i; i++) {
+            setSeatStatus({ id: seat[i], status: "reserve" });
+          }
         },
       }
     );
   };
 
-  const handleOnReady = () => {
-    setIsReady(true);
-  };
-
   const payloadPreference = () => {
     return [
       {
-        title: tour.origin,
-        unit_price: 3500,
+        title: tour?.origin,
+        unit_price: seat.length * tour?.price!,
         quantity: 1,
-        id: tour.id,
+        id: tour?.id,
       },
     ];
   };
 
   const createPreference = async () => {
     try {
+      handleSubmit();
       setLoadingPreference(true);
       const id = await createPreferenceClient({
         data: payloadPreference(),
@@ -125,80 +121,71 @@ const Reserve = () => {
       setLoadingPreference(false);
     }
   };
+  const nextStep = activeStep !== 2;
+  const validationErrors = steps[activeStep].validationErrors;
+  const enabledNextStep = validationErrors.length === 0;
 
   return (
     <Container>
+      <Title>Comprar</Title>
       <SectionContent>
-        <Box style={{ maxHeight: "400px" }}>
-          <Title>Comprar</Title>
-          <MultiSelect
-            options={tours || []}
-            label="Seleccione un viaje"
-            value={tour}
-            onChange={handleTour}
-            display="origin"
+        <Box>
+          <StepperComponent
+            steps={steps}
+            activeStep={activeStep}
+            completed={activeStep === 2}
           />
-          <TextField
-            id="standard-basic"
-            label="Destino"
-            variant="standard"
-            value={tours?.find((op) => op.id === tour.id)?.destination}
-            placeholder="Destination"
-            disabled
-          />
-          <DatePicker value={date} onChange={setDate} label="Select Date" />
-        </Box>
-        {loading && " ----- Cargando -----"}
-        {van.seats.length > 0 && (
-          <>
+          <Body>{steps[activeStep].component}</Body>
+          <Footer>
             <SectionContainer>
-              <Row>
-                <TicketInfo>Disponible : </TicketInfo> <Dot color="#0F4C75" />
-              </Row>
-              <Row>
-                <TicketInfo>No disponible : </TicketInfo>
-                <Dot color="#CCCCCC" />
-              </Row>
-            </SectionContainer>
-            <SeatsContainer>
-              <Seats />
-            </SeatsContainer>
-            <SectionContainer>
-              <Row>
-                <Button
-                  variant="contained"
-                  size="small"
-                  disabled={!van || !seat || !date || isLoading}
-                  onClick={createPreference}
-                  startIcon={
-                    loadingPreference ? (
-                      <HourglassBottomIcon />
-                    ) : (
-                      <EventSeatIcon />
-                    )
-                  }
-                >
-                  Reservar
-                </Button>
-              </Row>
-              <Row>
-                {preferenceId && (
+              {!preferenceId ? (
+                <>
+                  <Row>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={activeStep === 0}
+                      onClick={() => setActiveStep((step) => step - 1)}
+                      startIcon={<ArrowBackIcon />}
+                    >
+                      Atrás
+                    </Button>
+                  </Row>
+                  <Row>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      disabled={!enabledNextStep}
+                      onClick={() =>
+                        nextStep
+                          ? setActiveStep((step) => step + 1)
+                          : createPreference()
+                      }
+                      startIcon={
+                        loadingPreference ? (
+                          <HourglassBottomIcon />
+                        ) : nextStep ? (
+                          <NavigateNextIcon />
+                        ) : (
+                          <EventSeatIcon />
+                        )
+                      }
+                    >
+                      {nextStep ? "Siguiente" : "Comprar"}
+                    </Button>
+                  </Row>
+                </>
+              ) : (
+                <Row>
                   <Wallet
-                    onReady={handleOnReady}
-                    initialization={{ preferenceId, redirectMode: "modal" }}
+                    initialization={{ preferenceId, redirectMode: "self" }}
                   />
-                )}
-              </Row>
+                </Row>
+              )}
             </SectionContainer>
-          </>
-        )}
+          </Footer>
+        </Box>
       </SectionContent>
-      <SnackbarAlert
-        message={message}
-        status={status}
-        open={open}
-        handleClose={() => setOpen(false)}
-      />
     </Container>
   );
 };

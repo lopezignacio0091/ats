@@ -5,4 +5,8 @@ export interface Tour {
   distance: string;
   rateId: string;
   vanId: string;
+  driverId:string;
+  name:string;
+  email:string;
+  price:number;
 }

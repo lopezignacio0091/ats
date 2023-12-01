@@ -27,6 +27,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     name: "",
+    domicile:""
   });
   const { setMessage, message, status } = useStore((state) => state);
   const [error, setError] = useState("");
@@ -34,7 +35,7 @@ const Register = () => {
   const [open, setOpen] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
 
-  const { mutate, isSuccess, isError, isLoading } = useRegister();
+  const { mutate:createUser, isSuccess, isError, isLoading } = useRegister();
   const history = useHistory();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +53,7 @@ const Register = () => {
       setError("Email es invalido");
       isError = true;
     }
-    if(user.password.length <  8){
+    if (user.password.length < 8) {
       setErrorNotEquals("La password tiene que ser mayor a 8");
       isError = true;
     }
@@ -66,14 +67,14 @@ const Register = () => {
   const handleSubmit = () => {
     if (validate()) return;
     setShowLoading(true);
-    mutate(user, {
+    createUser(user, {
       onSuccess: ({ message }) => {
-         setShowLoading(false)
+        setShowLoading(false);
         setMessage(message, Status.SUCCCES);
         setOpen(true);
       },
       onError: () => {
-        setShowLoading(false)
+        setShowLoading(false);
         setMessage("Error en el registro", Status.ERROR);
         setOpen(true);
       },
@@ -162,8 +163,20 @@ const Register = () => {
               helperText={helperError() || helperInfo()}
             />
           </div>
+          <div>
+            <TextField
+              label="Domicilio"
+              size="small"
+              onChange={handleChange}
+              name="domicile"
+              fullWidth
+              variant="standard"
+              error={!!error}
+              helperText={error}
+            />
+          </div>
         </CardBody>
-        {isLoading || showLoading && <Loading />}
+        {isLoading || (showLoading && <Loading />)}
         <CardFooter>
           <Button
             variant="contained"

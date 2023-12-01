@@ -27,22 +27,29 @@ export const Title = styled.div`
   font-family: ${({ theme }) => theme.fonts.family};
   font-size: 24px;
   font-weight: 700;
+  text-align: center;
 `;
 
 export const Box = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 16px;
   border: 1px solid ${({ theme }) => theme.blue};
   border-radius: 10px;
-  justify-content: center;
-  flex: 1;
-  align-items: center;
-  gap: 24px;
-  min-width: 90px;
-  cursor: pointer;
   width: 100%;
+  padding: 0 8px;
+  & .MuiStepper-root {
+    margin-top: 24px;
+  }
+  gap: 24px;
+  min-height: 620px;
+`;
 
+export const Body = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  padding: 0 24px;
   & .MuiTextField-root {
     width: 100%;
     padding: 8px;
@@ -52,25 +59,8 @@ export const Box = styled.div`
       font-size: 12px;
     }
   }
+  position: relative;
 `;
-export const SectionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  gap: 16px;
-`;
-
-export const SeatsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-`;
-
 
 export const SectionDescription = styled.div`
   flex-direction: row;
@@ -78,26 +68,25 @@ export const SectionDescription = styled.div`
   justify-content: space-between;
 `;
 
-export const TicketInfo = styled.p`
-  font-size: 12px;
-  font-weight: 700;
-  margin: 0;
-  color: #a09e9e;
-  text-align: center;
-  font-family: ${({theme})=> theme.fonts.family};
-`;
-
-export const Dot = styled.span<{ color: string }>`
-  width: 8px;
-  height: 12px;
-  background-color: ${({ color }) => color};
-  border-radius: 10%;
-`;
-
-
 export const Row = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 4px;
+`;
+
+export const SectionContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px;
+`;
+
+
+export const Footer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
 `;

@@ -8,6 +8,7 @@ const INITIAL_USER: User = {
   token: localStorage.getItem("token") || "",
   id: "",
   rol: "",
+  domicile:''
 };
 const store = (set: any) => ({
   auth: false,
@@ -20,11 +21,16 @@ const store = (set: any) => ({
   },
   logout: () =>
     set((state: LoginStore) => {
-      set(() => {
-        (state.auth = false), (state.user = INITIAL_USER);
-      });
       localStorage.removeItem("token");
+      set(() => {
+        (state.auth = false), (state.user = { ...INITIAL_USER, token: "" });
+      });
     }),
+  setUser: (user: User) => {
+    set((state: LoginStore) => {
+      (state.auth = true), (state.user = user);
+    });
+  },
 });
 
 const useStore = create<LoginStore>()(devtools(immer(store)));

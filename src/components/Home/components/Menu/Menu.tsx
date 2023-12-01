@@ -15,7 +15,7 @@ const Menu = () => {
     <Container>
       <Row>
         <Box
-          label="Reserva"
+          label="Comprar"
           icon={<CalendarMonthIcon style={{ color: "red" }} />}
           onClick={() => handleRedirect("reserve")}
         />

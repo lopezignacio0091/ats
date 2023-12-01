@@ -18,6 +18,7 @@ export const Container = styled.div`
   width: 100%;
   align-items: center;
   box-sizing: border-box;
+  background: ${({theme})=> theme.white};
 `;
 
 export const ContainerInfo = styled.div`
@@ -27,7 +28,7 @@ export const ContainerInfo = styled.div`
   align-items: start;
 `;
 export const Card = styled.div`
-  height: 580px;
+  height: 640px;
   width: 340px;
   display: flex;
   flex-direction: column;

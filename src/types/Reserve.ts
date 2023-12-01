@@ -10,4 +10,6 @@ export interface Reserve {
   distance: string;
   rateId: string;
   vanId: string;
+  price:number;
+  alternativeDomicile?:string;
 }

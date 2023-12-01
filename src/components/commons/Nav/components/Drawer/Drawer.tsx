@@ -15,6 +15,9 @@ import { useHistory } from "react-router";
 
 const TemporaryDrawer = ({ open, onClose }: DrawerProps) => {
   const history = useHistory();
+
+
+  const listContent = [{}]
   const list = () => (
     <Box
       sx={{ width: 220 }}
@@ -36,7 +39,7 @@ const TemporaryDrawer = ({ open, onClose }: DrawerProps) => {
       </List>
       <Divider />
       <List>
-        {["Reserva", "Contacto"].map((text, index) => (
+        {["Comprar", "Contacto"].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
               <ListItemIcon>

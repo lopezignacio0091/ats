@@ -1,41 +1,21 @@
-import React from "react";
-import {
-  Background,
-  Container,
-  ContainerInfo,
-  Content,
-  Header,
-  Text,
-} from "./styles";
-import Info from "./components/Info/Info";
-import Menu from "./components/Menu/Menu";
-import Trips from "./components/Trips/Trips";
-import EmptyState from "../commons/EmptyState/EmptyState";
+import { Container } from "./styles";
 import useReserveById from "../../hooks/query/useReserveById";
+import useTours from "../../hooks/query/useTours";
+import useStore from "../Login/store/useStore";
+import User from "./User/User";
+import Driver from "./Driver/Driver";
+import useReservesByDriver from "../../hooks/query/useReservesByDriver";
+const DRIVER = "driver";
 
 const Home = () => {
-  const { data, isLoading } = useReserveById();
-
+  const { rol } = useStore((state) => state.user);
+  const { isLoading: loadingReserves } =
+    rol === DRIVER ? useReservesByDriver() : useReserveById();
+    
+  const { isLoading: loadingTours } = useTours();
+  const isLoading = loadingReserves || loadingTours;
   if (isLoading) return "loading...";
-  return (
-    <Container>
-      <Header>
-        <Background />
-        <ContainerInfo>
-          <Info />
-        </ContainerInfo>
-        <Menu />
-      </Header>
-      {data && data?.length > 0 ? (
-        <Content>
-          <Text>Mis viajes:</Text>
-          <Trips />
-        </Content>
-      ) : (
-        <EmptyState />
-      )}
-    </Container>
-  );
+  return <Container>{rol === DRIVER ? <Driver /> : <User />}</Container>;
 };
 
 export default Home;
